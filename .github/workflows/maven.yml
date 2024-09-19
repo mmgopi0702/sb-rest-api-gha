@@ -1,0 +1,57 @@
+name: Maven CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - develop
+      - test
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Build with Maven
+        run: mvn clean install -DskipTests
+
+      - name: Run tests
+        run: mvn test
+
+  deploy-dev:
+    if: github.ref == 'refs/heads/develop'
+    runs-on: ubuntu-latest
+    environment: dev  # References the dev environment
+    steps:
+      - name: Deploy to Development
+        run: |
+          echo "Deploying to Development"
+          # Your deployment steps for dev
+
+  deploy-test:
+    if: github.ref == 'refs/heads/test'
+    runs-on: ubuntu-latest
+    environment: test  # References the test environment
+    steps:
+      - name: Deploy to Test
+        run: |
+          echo "Deploying to Test"
+          # Your deployment steps for test
+
+  deploy-prod:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: prod  # References the prod environment (approval required)
+    steps:
+      - name: Deploy to Production
+        run: |
+          echo "Deploying to Production"
+          # Your deployment steps for prod
