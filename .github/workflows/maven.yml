@@ -35,7 +35,9 @@ jobs:
         run: |
           echo "Deploying to Development"
           # Your deployment steps for dev
-
+    needs:
+    - build
+    
   deploy-test:
     if: github.ref == 'refs/heads/test'
     runs-on: ubuntu-latest
