@@ -47,17 +47,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
-
       # Step 4: Build with Maven (with or without tests based on input)
       - name: Build with Maven
-
-  deploy-dev:
-    if: github.ref == 'refs/heads/develop'
-    runs-on: ubuntu-latest
-    environment: develop  # References the dev environment
-    steps:
-      - name: Deploy to Development
-
         run: |
           if [ "${{ github.event.inputs.build_with_tests }}" == "yes" ]; then
             mvn clean install
