@@ -1,12 +1,17 @@
 name: Maven CI/CD Pipeline
 
 on:
-  push:
-    branches:
-      - develop
-      - test
-      - main
-
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Select the environment to deploy to'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - develop
+          - test
+          - prod
 jobs:
   build:
     runs-on: ubuntu-latest
