@@ -29,7 +29,7 @@ jobs:
   deploy-dev:
     if: github.ref == 'refs/heads/develop'
     runs-on: ubuntu-latest
-    environment: dev  # References the dev environment
+    environment: develop  # References the dev environment
     steps:
       - name: Deploy to Development
         run: |
