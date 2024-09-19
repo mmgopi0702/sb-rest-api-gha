@@ -1,5 +1,6 @@
-name: Maven CI/CD Pipeline
+name: Manual Maven Build and Deploy
 
+# Trigger the workflow manually
 on:
   workflow_dispatch:
     inputs:
@@ -9,56 +10,67 @@ on:
         default: 'dev'
         type: choice
         options:
-          - develop
+          - dev
           - test
           - prod
+      build_with_tests:
+        description: 'Do you want to run tests during the build?'
+        required: true
+        default: 'no'
+        type: choice
+        options:
+          - yes
+          - no
+
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
+      # Step 1: Check out the code
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # Step 2: Set up JDK (Java Development Kit)
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
           java-version: '17'
 
+      # Step 3: Cache Maven dependencies for faster builds
+      - name: Cache Maven dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      # Step 4: Build with Maven (with or without tests based on input)
       - name: Build with Maven
-        run: mvn clean install -DskipTests
-
-      - name: Run tests
-        run: mvn test
-
-  deploy-dev:
-    if: github.ref == 'refs/heads/develop'
-    runs-on: ubuntu-latest
-    environment: dev  # References the dev environment
-    steps:
-      - name: Deploy to Development
         run: |
-          echo "Deploying to Development"
-          # Your deployment steps for dev
-    needs:
-    - build
-    
-  deploy-test:
-    if: github.ref == 'refs/heads/test'
-    runs-on: ubuntu-latest
-    environment: test  # References the test environment
-    steps:
-      - name: Deploy to Test
-        run: |
-          echo "Deploying to Test"
-          # Your deployment steps for test
+          if [ "${{ github.event.inputs.build_with_tests }}" == "yes" ]; then
+            mvn clean install
+          else
+            mvn clean install -DskipTests
+          fi
 
-  deploy-prod:
-    if: github.ref == 'refs/heads/main'
+  deploy:
     runs-on: ubuntu-latest
-    environment: prod  # References the prod environment (approval required)
+    needs: build
+
     steps:
-      - name: Deploy to Production
+      # Step 1: Deployment step based on the selected environment
+      - name: Deploy to Environment
         run: |
-          echo "Deploying to Production"
-          # Your deployment steps for prod
+          if [ "${{ github.event.inputs.environment }}" == "dev" ]; then
+            echo "Deploying to Development Environment"
+            # Add your development deployment script here
+          elif [ "${{ github.event.inputs.environment }}" == "test" ]; then
+            echo "Deploying to Test Environment"
+            # Add your test deployment script here
+          elif [ "${{ github.event.inputs.environment }}" == "prod" ]; then
+            echo "Deploying to Production Environment"
+            # Add your production deployment script here
+          fi
